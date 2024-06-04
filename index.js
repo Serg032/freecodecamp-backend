@@ -23,17 +23,22 @@ app.get("/api/hello", function (req, res) {
   res.json({ greeting: "hello API" });
 });
 
-// Timestamp Microservice
 app.get("/api/:date?", (req, res) => {
   try {
     const date = req.params.date;
     let parsedDate;
+
     if (!date) {
       parsedDate = new Date();
-    } else if (date.length > 10) {
-      parsedDate = new Date(Number(date));
     } else {
-      parsedDate = new Date(date);
+      // Intenta analizar la fecha como un timestamp Unix primero
+      const timestamp = Number(date);
+      if (!isNaN(timestamp)) {
+        parsedDate = new Date(timestamp);
+      } else {
+        // Si eso falla, intenta analizarlo como una cadena de fecha
+        parsedDate = new Date(date);
+      }
     }
 
     if (isNaN(parsedDate.getTime())) {
@@ -48,7 +53,7 @@ app.get("/api/:date?", (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    res.errored({
+    res.json({
       error: "Invalid Date",
     });
   }
